@@ -1,0 +1,34 @@
+%%车牌定位%%%
+clear;clc;close all
+[fn,pn,fi]=uigetfile('E:\车牌图片\*.jpg','选择图片');
+path=[pn fn];%提取路径
+I_orig=imread([pn fn]);%读入图像
+[height,width]=size(I_orig);
+% 针对山西长治的图片的裁剪%
+I_orig=I_orig(80:height,:,:);
+figure(1);imshow(I_orig);title('原始图像');%显示原始图像
+I_gray=rgb2gray(I_orig);
+figure(2);imshow(I_gray);
+I_edge_sobel=edge(I_gray,'sobel','horizontal');
+[H,T,R]=hough(I_edge_sobel);
+hough_thr=0.1;
+P=houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
+lines=houghlines(I_edge_sobel,T,R,P,'FillGap',75,'MinLength',hough);
+figure(3), imshow(I_edge_sobel),hold on
+max_len=0;
+ for k = 1:length(lines)
+         xy = [lines(k).point1; lines(k).point2];
+         plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+ 
+%          % plot beginnings and ends of lines
+%          plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
+%          plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
+%  
+         % determine the endpoints of the longest line segment 
+         len = norm(lines(k).point1 - lines(k).point2);
+         if ( len > max_len)
+           max_len = len;
+           xy_long = xy;
+         end
+ end
+
